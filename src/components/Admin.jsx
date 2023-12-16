@@ -1,0 +1,55 @@
+import Header from "./Header";
+import VenueReducer from "../services/VenueReducer";
+import React from "react";
+import VenueDataService from "../services/VenueDataService";
+import VenueList from "./VenueList";
+
+function Admin() {
+            
+  const [venues, dispatchVenues] = React.useReducer(VenueReducer, {
+    data: [],
+    isLoading: false,
+    isSuccess: false,
+    isError: false,
+  }); 
+            
+  React.useEffect(() => {
+    dispatchVenues({ type: "FETCH_INIT" });
+    try {
+      
+      VenueDataService.listJsonVenues().then((result) => {
+        dispatchVenues({
+          type: "FETCH_SUCCESS",
+          payload: result.data,
+        });
+      });
+    } catch {
+      dispatchVenues({ type: "FETCH_FAILURE" });
+    }
+  }, []);
+            
+  const filteredVenues = venues.data;
+
+  return (
+    <div>
+      <Header headerText="Yönetici" motto="Mekanlarınızı Yönetin!"/>
+      {venues.isError ? (
+        <p>
+          <strong>Birşeyler ters gitti! ...</strong>
+        </p>
+      ) : venues.isLoading ? (
+        <p>
+          <strong>Mekanlar Yükleniyor ...</strong>
+        </p>
+      ) : (
+        venues.isSuccess && (
+          <div className="row">
+            <VenueList venues={filteredVenues} admin={true}/> {/*venueleri listeliyoruz ekranda*/}
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+export default Admin;
